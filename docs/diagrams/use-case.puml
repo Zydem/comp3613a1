@@ -1,0 +1,45 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "Student" as Student
+
+rectangle "Student Awards" {
+  usecase "Track milestones and leaderboard" as Track_milestones_and_leaderboard
+  usecase "View progress dashboard" as View_progress_dashboard
+  usecase "Redeem rewards" as Redeem_rewards
+  usecase "Check reward eligibility" as Check_reward_eligibility
+  usecase "Cancel reward redemption" as Cancel_reward_redemption
+  usecase "Fulfil reward redemption" as Fulfil_reward_redemption
+  usecase "Log and submit volunteer hours" as Log_and_submit_volunteer_hours
+  usecase "Verify volunteer hours" as Verify_volunteer_hours
+  usecase "Approve volunteer hours" as Approve_volunteer_hours
+  usecase "Reject volunteer submission" as Reject_volunteer_submission
+}
+
+actor "Staff" as Staff
+
+Student --> Track_milestones_and_leaderboard
+Track_milestones_and_leaderboard ..> View_progress_dashboard : <<include>>
+Student --> View_progress_dashboard
+Student --> Redeem_rewards
+Redeem_rewards ..> Check_reward_eligibility : <<include>>
+Redeem_rewards ..> Cancel_reward_redemption : <<extend>>
+Fulfil_reward_redemption <-- Staff
+Fulfil_reward_redemption ..> Redeem_rewards : <<extend>>
+Student --> Log_and_submit_volunteer_hours
+Verify_volunteer_hours <-- Staff
+Verify_volunteer_hours ..> Approve_volunteer_hours : <<include>>
+Verify_volunteer_hours ..> Reject_volunteer_submission : <<extend>>
+Approve_volunteer_hours <-- Staff
+Reject_volunteer_submission <-- Staff
+
+@enduml

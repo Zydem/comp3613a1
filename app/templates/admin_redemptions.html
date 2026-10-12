@@ -1,0 +1,63 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <h1 class="h4 mb-1">Redemptions</h1>
+      <p class="text-muted mb-0">Review requested rewards, mark them as fulfilled, or cancel and refund points.</p>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Reward</th>
+              <th>Points</th>
+              <th>Note</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if redemptions %}
+              {% for row in redemptions %}
+              <tr>
+                <td>{{ row.redemption.userid }}</td>
+                <td>{{ row.reward.name if row.reward else row.redemption.rewardid }}</td>
+                <td>{{ row.redemption.pointsspent }} pts</td>
+                <td>{{ row.redemption.staffnote or '—' }}</td>
+                <td><span class="badge {{ 'bg-warning text-dark' if row.redemption.status == 'requested' else 'bg-success' if row.redemption.status == 'fulfilled' else 'bg-secondary' }}">{{ row.redemption.status|title }}</span></td>
+                <td>
+                  {% if row.redemption.status == 'requested' %}
+                  <div class="d-flex gap-2">
+                    <form method="post" action="{{ url_for('fulfill_redemption', redemption_id=row.redemption.redemptionid) }}">
+                      <button type="submit" class="btn btn-success btn-sm">Fulfill</button>
+                    </form>
+                    <form method="post" action="{{ url_for('cancel_redemption', redemption_id=row.redemption.redemptionid) }}">
+                      <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                    </form>
+                  </div>
+                  {% else %}
+                  <span class="text-muted">Processed</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">No reward redemptions currently need review.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

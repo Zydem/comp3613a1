@@ -1,14 +1,13 @@
 :root {
-  /* Phase 5 theming: Guide overwrites these from docs/report.md preferences */
-  --brand-name: "FastStarter";
-  --brand-bg: #0c1218;
-  --brand-surface: #f7f4ef;
-  --brand-ink: #14202b;
-  --brand-muted: #6a7a88;
-  --brand-accent: #c45c26;
-  --brand-accent-2: #2a6f6b;
-  --brand-sidebar: #14202b;
-  --brand-sidebar-text: #a8b4bf;
+  --brand-name: "Student Awards";
+  --brand-bg: #120f1c;
+  --brand-surface: #f6f3ff;
+  --brand-ink: #221b35;
+  --brand-muted: #615a7e;
+  --brand-accent: #6d5ef6;
+  --brand-accent-2: #9d8cff;
+  --brand-sidebar: #1b1630;
+  --brand-sidebar-text: #d8d2ff;
   --brand-font-display: "Fraunces", Georgia, serif;
   --brand-font-body: "Source Sans 3", "Segoe UI", sans-serif;
   --brand-radius: 0.85rem;
@@ -31,6 +30,30 @@ body {
   font-family: var(--brand-font-display);
   font-weight: 650;
   letter-spacing: -0.03em;
+}
+
+.btn-primary {
+  --bs-btn-color: #1f1c2c;
+  --bs-btn-bg: #E9E5FB;
+  --bs-btn-border-color: #E9E5FB;
+  --bs-btn-hover-color: #1f1c2c;
+  --bs-btn-hover-bg: #dcd4f8;
+  --bs-btn-hover-border-color: #dcd4f8;
+  --bs-btn-focus-shadow-rgb: 233, 229, 251;
+  --bs-btn-active-color: #1f1c2c;
+  --bs-btn-active-bg: #d0c6f5;
+  --bs-btn-active-border-color: #d0c6f5;
+  --bs-btn-disabled-bg: #efeaff;
+  --bs-btn-disabled-border-color: #efeaff;
+}
+
+.progress-bar,
+.bg-primary,
+.text-primary,
+.border-primary {
+  background-color: #E9E5FB !important;
+  color: #1f1c2c !important;
+  border-color: #E9E5FB !important;
 }
 
 /* —— Public landing —— */
@@ -143,13 +166,13 @@ body {
 }
 
 .btn-landing-primary {
-  background: var(--brand-accent);
-  color: #fff8f3;
+  background: #E9E5FB;
+  color: #1f1c2c;
 }
 
 .btn-landing-primary:hover {
-  background: color-mix(in srgb, var(--brand-accent) 85%, #000);
-  color: #fff;
+  background: #dcd4f8;
+  color: #1f1c2c;
 }
 
 .btn-landing-ghost {

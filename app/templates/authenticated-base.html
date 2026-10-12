@@ -4,25 +4,26 @@
 <style>
     body {
         overflow-x: hidden;
-        background: #f4f6f8;
+        background: #E9E5FB;
     }
 
     #wrapper {
         display: flex;
+        flex-direction: column;
         min-height: 100vh;
     }
 
     #sidebar {
-        min-width: 250px;
-        max-width: 250px;
-        min-height: 100vh;
+        width: 100%;
         transition: all 0.3s;
         background: var(--brand-sidebar);
         color: #fff;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+        padding: 0.75rem 0.75rem 0.5rem;
     }
 
     #sidebar.collapsed {
-        margin-left: -250px;
+        display: none;
     }
 
     #sidebar .nav-link {
@@ -39,9 +40,19 @@
 
     #sidebar .brand-wordmark {
         color: #fff;
-        font-size: 1.25rem;
-        text-align: center;
-        margin: 1rem 0 1.5rem;
+        font-size: 1rem;
+        text-align: left;
+        margin: 0.25rem 0 0.5rem;
+        letter-spacing: 0.02em;
+    }
+
+    #sidebar .nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: center;
+        margin-bottom: 0;
     }
 
     #content {
@@ -50,11 +61,60 @@
         transition: all 0.3s;
         display: flex;
         flex-direction: column;
-        background-color: #f4f6f8;
+        background-color: #E9E5FB;
     }
 
     .navbar {
         border-bottom: 1px solid #dee2e6;
+    }
+
+    .milestone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        border: 1px solid transparent;
+        vertical-align: middle;
+        line-height: 1.2;
+    }
+
+    .milestone-badge::before {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .milestone-bronze {
+        background: #fff0d9;
+        color: #8a5b17;
+        border-color: #e7bb73;
+    }
+
+    .milestone-bronze::before {
+        content: "🥉";
+    }
+
+    .milestone-silver {
+        background: #edf2f7;
+        color: #4b5d75;
+        border-color: #c8d1dc;
+    }
+
+    .milestone-silver::before {
+        content: "🥈";
+    }
+
+    .milestone-gold {
+        background: #fff6cf;
+        color: #8a6700;
+        border-color: #d8b447;
+    }
+
+    .milestone-gold::before {
+        content: "🥇";
     }
 </style>
 {% block additional_styles %}{% endblock %}
@@ -62,18 +122,77 @@
 
 {% block content %}
 <div id="wrapper">
-    <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <div class="brand-wordmark">FastStarter</div>
+    <nav id="sidebar" class="p-3">
+        <div class="brand-wordmark">Student Awards</div>
 
-        <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app') }}"
-                   href="{{ url_for('user_home_view') }}">
-                    <span class="material-symbols-outlined me-2">home</span>
-                    Home
-                </a>
-            </li>
-            <li class="nav-item mt-auto">
+        <ul class="nav nav-pills">
+            {% if user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/admin') }}"
+                       href="{{ url_for('admin_home_view') }}">
+                        <span class="material-symbols-outlined me-2">dashboard</span>
+                        Review Claims
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/admin/redemptions') }}"
+                       href="{{ url_for('admin_redemptions_view') }}">
+                        <span class="material-symbols-outlined me-2">shopping_bag</span>
+                        Redemptions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/admin/leaderboard') }}"
+                       href="{{ url_for('admin_leaderboard_view') }}">
+                        <span class="material-symbols-outlined me-2">leaderboard</span>
+                        Leaderboard
+                    </a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app') }}"
+                       href="{{ url_for('user_home_view') }}">
+                        <span class="material-symbols-outlined me-2">dashboard</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/hours') }}"
+                       href="{{ url_for('hours_dashboard') }}">
+                        <span class="material-symbols-outlined me-2">schedule</span>
+                        Log Hours
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/claims') }}"
+                       href="{{ url_for('user_claims_view') }}">
+                        <span class="material-symbols-outlined me-2">list_alt</span>
+                        My Claims
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/leaderboard') }}"
+                       href="{{ url_for('student_leaderboard_view') }}">
+                        <span class="material-symbols-outlined me-2">leaderboard</span>
+                        Leaderboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/rewards') }}"
+                       href="{{ url_for('student_rewards_view') }}">
+                        <span class="material-symbols-outlined me-2">card_giftcard</span>
+                        Rewards
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/redemptions') }}"
+                       href="{{ url_for('student_redemptions_view') }}">
+                        <span class="material-symbols-outlined me-2">receipt_long</span>
+                        My Redemptions
+                    </a>
+                </li>
+            {% endif %}
+            <li class="nav-item ms-auto">
                 <a class="nav-link d-flex align-items-center text-danger" href="{{ url_for('logout') }}">
                     <span class="material-symbols-outlined me-2">logout</span>
                     Logout
@@ -84,9 +203,6 @@
 
     <div id="content">
         <nav class="navbar navbar-expand-lg bg-white mb-4 px-3 rounded-3 shadow-sm">
-            <button class="btn btn-outline-secondary" id="menu-toggle" type="button">
-                <span class="material-symbols-outlined md-dark">menu</span>
-            </button>
             <div class="ms-auto d-flex align-items-center gap-3">
                 <span class="fw-semibold">Welcome, {{ user.username }}</span>
             </div>
@@ -104,10 +220,5 @@
     </div>
 </div>
 
-<script>
-    document.getElementById("menu-toggle").addEventListener("click", function () {
-        document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-</script>
 {% block subpage_scripts %}{% endblock %}
 {% endblock %}

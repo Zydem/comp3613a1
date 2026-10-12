@@ -1,0 +1,45 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h1 class="h4 mb-3">Leaderboard</h1>
+
+      {% if leaderboard %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student</th>
+              <th>Lifetime hours</th>
+              <th>Milestone</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in leaderboard %}
+            <tr class="{% if entry.user.id == user.id %}table-primary{% endif %}">
+              <td>#{{ entry.rank }}</td>
+              <td>{{ entry.user.username }}{% if entry.user.id == user.id %} (You){% endif %}</td>
+              <td>{{ entry.user.lifetimehours }}</td>
+              <td>
+                {% if entry.milestone %}
+                  <span class="milestone-badge milestone-{{ entry.milestone.name|lower }}">{{ entry.milestone.name }}</span>
+                {% else %}
+                  No milestone yet
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No students have logged hours yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}FastStarter{% endblock %}
+{% block title %}Student Awards{% endblock %}
 
 {% block content %}
 <div class="landing">
@@ -7,7 +7,7 @@
   <div class="landing-orb landing-orb-2" aria-hidden="true"></div>
 
   <header class="landing-nav">
-    <a class="brand-wordmark" href="{{ url_for('index_view') }}">FastStarter</a>
+    <a class="brand-wordmark" href="{{ url_for('index_view') }}">Student Awards</a>
     <div class="landing-nav-actions">
       {% if user_logged_in %}
       <a class="btn-landing btn-landing-ghost" href="{{ app_home }}">Open app</a>
@@ -20,11 +20,10 @@
   </header>
 
   <main class="landing-hero">
-    <p class="landing-kicker">Coursework starter</p>
-    <h1 class="brand-wordmark">FastStarter</h1>
+    <p class="landing-kicker">Reward effort. Track growth.</p>
+    <h1 class="brand-wordmark">Student Awards</h1>
     <p class="landing-lead">
-      A placeholder landing page for your COMP 3613 app.
-      Phase 5 theming replaces these colors, type, and copy with your brand.
+      Students log volunteer hours, unlock milestones, and redeem rewards as their recognition grows.
     </p>
     <div class="landing-cta">
       {% if user_logged_in %}

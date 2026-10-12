@@ -1,0 +1,121 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block subpage_content %}
+<div class="container py-4">
+  <div class="card border-0 shadow-sm mx-auto" style="max-width: 760px;">
+    <div class="card-body p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <p class="text-uppercase text-muted small fw-semibold mb-1">Reward request</p>
+          <h1 class="h3 mb-0">Confirm Redeem</h1>
+        </div>
+        <a href="{{ url_for('student_rewards_view') }}" class="btn btn-outline-secondary btn-sm">Back to rewards</a>
+      </div>
+
+      <div class="row g-4 align-items-start">
+        <div class="col-md-4">
+          <div class="reward-art d-flex align-items-center justify-content-center border rounded-4" style="height: 220px; background: #f1ecff;">
+            {% if reward.name == 'Campus Hoodie' %}
+              <svg viewBox="0 0 300 220" aria-label="Campus hoodie" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <path d="M80 70 L214 70 L234 157 L191 170 L150 150 L109 170 L66 157 Z" fill="#4D2FA5"/>
+                <path d="M96 70 L124 44 L176 44 L204 70" stroke="#38206F" stroke-width="10" stroke-linecap="round" fill="none"/>
+                <path d="M100 103 L120 110 L138 82 L162 82 L180 110 L200 103 L196 142 L155 152 L150 130 L145 152 L104 142 Z" fill="#E9E3FF"/>
+                <text x="150" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#fff">SA</text>
+              </svg>
+            {% elif reward.name == 'Coffee Voucher' %}
+              <svg viewBox="0 0 300 220" aria-label="Coffee voucher" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <path d="M78 74 H205 C220 74 232 86 232 101 V130 C232 152 214 170 192 170 H108 C86 170 68 152 68 130 V101 C68 86 80 74 78 74 Z" fill="#4D2FA5"/>
+                <path d="M204 90 H220 C234 90 246 102 246 116 C246 130 234 142 220 142 H204" stroke="#4D2FA5" stroke-width="12" stroke-linecap="round"/>
+                <path d="M150 90 C163 90 172 101 172 114 C172 127 163 138 150 138 C137 138 128 127 128 114 C128 101 137 90 150 90 Z" fill="#E9E3FF"/>
+                <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#4D2FA5">★</text>
+              </svg>
+            {% elif reward.name == 'Conference Ticket' %}
+              <svg viewBox="0 0 300 220" aria-label="Conference ticket" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <path d="M62 70 H238 L260 92 V150 L238 172 H62 L40 150 V92 Z" fill="#4D2FA5"/>
+                <text x="150" y="108" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#fff">ADMIT ONE</text>
+                <text x="150" y="136" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#E9E3FF">Community Conference</text>
+              </svg>
+            {% elif reward.name == 'Gold Access Pass' %}
+              <svg viewBox="0 0 300 220" aria-label="Gold access pass" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <rect x="78" y="32" width="144" height="156" rx="18" fill="#fff7d7"/>
+                <circle cx="150" cy="86" r="22" fill="#F7C74E"/>
+                <text x="150" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#4D2FA5">GOLD VIP</text>
+              </svg>
+            {% elif reward.name == 'Lunch Pass' %}
+              <svg viewBox="0 0 300 220" aria-label="Lunch pass" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <rect x="80" y="118" width="140" height="14" rx="7" fill="#4D2FA5"/>
+                <path d="M120 146 C120 118 140 100 150 100 C160 100 180 118 180 146" stroke="#4D2FA5" stroke-width="7" stroke-linecap="round" fill="none"/>
+                <text x="150" y="66" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#4D2FA5">LUNCH</text>
+              </svg>
+            {% elif reward.name == 'Out of Stock Tee' %}
+              <svg viewBox="0 0 300 220" aria-label="Out of stock tee" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <path d="M80 68 L120 62 L140 46 L160 46 L180 62 L220 68 L206 146 L186 150 L148 130 L112 150 L94 146 Z" fill="#D9D0F6"/>
+                <text x="150" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#E86666">SOLD OUT</text>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 300 220" role="img" style="width: 100%; height: 100%; max-width: 260px;">
+                <rect x="70" y="60" width="160" height="100" rx="18" fill="#4D2FA5"/>
+                <text x="150" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#fff">Reward</text>
+              </svg>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-md-8">
+          <h2 class="h4 mb-2">{{ reward.name }}</h2>
+          <p class="text-muted mb-4">{{ reward.description }}</p>
+
+          <ul class="list-unstyled mb-4">
+            {% for item in eligibility_checks %}
+            <li class="mb-2 d-flex align-items-center">
+              <span class="me-2 {{ 'text-success' if item.ok else 'text-danger' }} fw-bold">{{ '✓' if item.ok else '✕' }}</span>
+              <span>{{ item.label }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+
+          <div class="row g-2 mb-4">
+            <div class="col-sm-4">
+              <div class="border rounded-3 p-3 bg-light h-100">
+                <small class="text-muted d-block">Balance now</small>
+                <strong>{{ balance_now }} pts</strong>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="border rounded-3 p-3 bg-light h-100">
+                <small class="text-muted d-block">Cost</small>
+                <strong>{{ reward.pointscost }} pts</strong>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="border rounded-3 p-3 bg-light h-100">
+                <small class="text-muted d-block">Balance after</small>
+                <strong>{{ balance_after }} pts</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-light border small text-muted mb-4">
+            Lifetime hours and rank won't change.
+          </div>
+
+          <form method="post" action="{{ url_for('student_confirm_redeem_reward', reward_id=reward.rewardid) }}">
+            <input type="hidden" name="confirm_redeem" value="1">
+
+            <div class="mb-3">
+              <label for="staff_note" class="form-label">Optional note to staff</label>
+              <textarea id="staff_note" name="staff_note" rows="3" class="form-control" placeholder="Example: size M, pickup at 2pm, etc."></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" {% if not is_eligible %}disabled{% endif %}>Confirm Redeem</button>
+              <a href="{{ url_for('student_rewards_view') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

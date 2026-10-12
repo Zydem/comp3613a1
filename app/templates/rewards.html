@@ -1,0 +1,197 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .reward-card {
+    background: #f2eefb;
+    border: 1px solid rgba(104, 76, 163, 0.12);
+    border-radius: 1.2rem;
+    overflow: hidden;
+    min-height: 420px;
+  }
+
+  .reward-art {
+    height: 220px;
+    background: #e8e2fb;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .reward-art svg {
+    width: 100%;
+    height: 100%;
+    max-width: 280px;
+    display: block;
+  }
+
+  .reward-card .badge {
+    min-width: 78px;
+  }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h4 mb-1">Reward catalog</h1>
+        <p class="text-muted mb-0">Your points balance: {{ user.pointsbalance }} pts</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for item in catalog %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-0 shadow-sm reward-card">
+        <div class="card-body d-flex flex-column">
+          <div class="reward-art">
+            {% if item.reward.name == 'Campus Hoodie' %}
+              <svg viewBox="0 0 300 220" aria-label="Campus hoodie reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <path d="M80 70 L214 70 L234 157 L191 170 L150 150 L109 170 L66 157 Z" fill="#4D2FA5"/>
+                  <path d="M96 70 L124 44 L176 44 L204 70" stroke="#38206F" stroke-width="10" stroke-linecap="round" fill="none"/>
+                  <path d="M107 78 L92 144 L119 160 L138 102 Z" fill="#4D2FA5"/>
+                  <path d="M193 78 L208 144 L181 160 L162 102 Z" fill="#4D2FA5"/>
+                  <path d="M100 103 L120 110 L138 82 L162 82 L180 110 L200 103 L196 142 L155 152 L150 130 L145 152 L104 142 Z" fill="#E9E3FF"/>
+                  <text x="150" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#fff">SA</text>
+                  <rect x="116" y="158" width="68" height="18" rx="6" fill="#3D2579"/>
+                </g>
+              </svg>
+            {% elif item.reward.name == 'Coffee Voucher' %}
+              <svg viewBox="0 0 300 220" aria-label="Coffee voucher reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <path d="M78 74 H205 C220 74 232 86 232 101 V130 C232 152 214 170 192 170 H108 C86 170 68 152 68 130 V101 C68 86 80 74 78 74 Z" fill="#4D2FA5"/>
+                  <path d="M204 90 H220 C234 90 246 102 246 116 C246 130 234 142 220 142 H204" stroke="#4D2FA5" stroke-width="12" stroke-linecap="round"/>
+                  <path d="M108 66 C122 54 147 48 150 48 C153 48 178 54 192 66" stroke="#4D2FA5" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M150 90 C163 90 172 101 172 114 C172 127 163 138 150 138 C137 138 128 127 128 114 C128 101 137 90 150 90 Z" fill="#E9E3FF"/>
+                  <path d="M111 144 C129 134 136 119 150 119 C164 119 171 134 189 144" stroke="#E9E3FF" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M146 80 L154 88 L160 80 L154 72 Z" fill="#FFD15A"/>
+                  <text x="150" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#4D2FA5">★</text>
+                </g>
+              </svg>
+            {% elif item.reward.name == 'Conference Ticket' %}
+              <svg viewBox="0 0 300 220" aria-label="Conference ticket reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <path d="M62 70 H238 L260 92 V150 L238 172 H62 L40 150 V92 Z" fill="#4D2FA5"/>
+                  <path d="M58 113 H242" stroke="#D9D0F6" stroke-width="3" stroke-dasharray="8 8"/>
+                  <text x="150" y="108" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#fff">ADMIT ONE</text>
+                  <text x="150" y="136" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#E9E3FF">Community Conference</text>
+                  <path d="M235 86 L265 68 L265 172 L235 154 Z" fill="#E9E3FF" opacity="0.25"/>
+                  <path d="M80 155 L110 155" stroke="#F7C74E" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M105 155 L121 155" stroke="#F7C74E" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M210 70 L230 70" stroke="#F7C74E" stroke-width="7" stroke-linecap="round"/>
+                  <text x="208" y="94" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#F7C74E">★</text>
+                </g>
+              </svg>
+            {% elif item.reward.name == 'Gold Access Pass' %}
+              <svg viewBox="0 0 300 220" aria-label="Gold pass reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <rect x="78" y="32" width="144" height="156" rx="18" fill="#fff7d7"/>
+                  <rect x="82" y="36" width="136" height="148" rx="14" fill="#FFF"/>
+                  <circle cx="150" cy="86" r="22" fill="#F7C74E"/>
+                  <path d="M150 60 L158 79 L178 80 L162 92 L168 111 L150 99 L132 111 L138 92 L122 80 L142 79 Z" fill="#fff"/>
+                  <text x="150" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#4D2FA5">GOLD VIP</text>
+                </g>
+              </svg>
+            {% elif item.reward.name == 'Lunch Pass' %}
+              <svg viewBox="0 0 300 220" aria-label="Lunch pass reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <rect x="80" y="118" width="140" height="14" rx="7" fill="#4D2FA5"/>
+                  <path d="M120 146 C120 118 140 100 150 100 C160 100 180 118 180 146" stroke="#4D2FA5" stroke-width="7" stroke-linecap="round" fill="none"/>
+                  <path d="M74 120 H228 C206 102 180 94 150 94 C120 94 94 102 74 120 Z" fill="#E9E3FF"/>
+                  <circle cx="127" cy="128" r="10" fill="#F7C74E"/>
+                  <circle cx="150" cy="128" r="10" fill="#F6A5A5"/>
+                  <circle cx="173" cy="128" r="10" fill="#6AD3B0"/>
+                  <path d="M120 70 H180" stroke="#4D2FA5" stroke-width="12" stroke-linecap="round"/>
+                  <text x="150" y="66" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#4D2FA5">LUNCH</text>
+                </g>
+              </svg>
+            {% elif item.reward.name == 'Out of Stock Tee' %}
+              <svg viewBox="0 0 300 220" aria-label="Sold out tee reward" role="img">
+                <g fill="none" fill-rule="evenodd">
+                  <circle cx="38" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="264" cy="36" r="6" fill="#D9D0F6"/>
+                  <circle cx="46" cy="188" r="5" fill="#D9D0F6"/>
+                  <circle cx="252" cy="188" r="5" fill="#D9D0F6"/>
+                  <path d="M80 68 L120 62 L140 46 L160 46 L180 62 L220 68 L206 146 L186 150 L148 130 L112 150 L94 146 Z" fill="#D9D0F6"/>
+                  <path d="M120 84 L140 68 L160 68 L180 84 L170 129 L130 129 Z" fill="#EAE3FF"/>
+                  <path d="M105 152 L195 152" stroke="#D9D0F6" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M90 86 L70 110 L78 156 L110 154" stroke="#E86666" stroke-width="7" stroke-linecap="round" fill="none"/>
+                  <path d="M210 86 L230 110 L222 156 L190 154" stroke="#E86666" stroke-width="7" stroke-linecap="round" fill="none"/>
+                  <text x="150" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#E86666">SOLD OUT</text>
+                </g>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 300 220" aria-label="Reward illustration" role="img">
+                <rect x="70" y="60" width="160" height="100" rx="18" fill="#4D2FA5"/>
+                <text x="150" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#fff">Reward</text>
+              </svg>
+            {% endif %}
+          </div>
+
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h2 class="h5 mb-0">{{ item.reward.name }}</h2>
+            <span class="badge {{ 'bg-success' if item.eligible else 'bg-secondary' }}">{{ 'Eligible' if item.eligible else 'Locked' }}</span>
+          </div>
+
+          <p class="text-muted mb-2">{{ item.reward.description }}</p>
+          <ul class="list-unstyled small text-muted mb-3">
+            <li><strong>Cost:</strong> {{ item.reward.pointscost }} points</li>
+            <li><strong>Stock:</strong> {{ item.reward.stock }}</li>
+            {% if item.reward.requiredmilestoneid %}
+            <li><strong>Milestone:</strong> <span class="milestone-badge milestone-gold">Gold</span></li>
+            {% endif %}
+          </ul>
+
+          {% if item.reasons %}
+          <div class="alert alert-light border mb-3 p-2 small text-danger">
+            <ul class="mb-0 ps-3">
+              {% for reason in item.reasons %}
+              <li>{{ reason }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+          {% if item.eligible and item.reward.stock > 0 %}
+          <form method="get" action="{{ url_for('student_reward_confirm_view', reward_id=item.reward.rewardid) }}" class="mt-auto">
+            <button type="submit" class="btn btn-primary w-100">Redeem</button>
+          </form>
+          {% else %}
+          <button class="btn btn-outline-secondary w-100 mt-auto" type="button" disabled>Unavailable</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

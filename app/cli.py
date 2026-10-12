@@ -49,8 +49,14 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_seed(args: argparse.Namespace) -> None:
     """Insert demo users.
 
-    bob / bobpass       (regular_user)
-    admin / adminpass   (admin)
+    Demo student ranking:
+      sasha / sashapass    (62h)
+      bob   / bobpass      (53h)
+      milo  / milopass     (48h)
+      nina  / ninapass     (30h)
+      omar  / omarpass     (19h)
+      priya / priyapass    (8h)
+      admin / adminpass    (admin)
     """
     from app.database import ensure_db_and_tables, get_cli_session
     from app.repositories.user import UserRepository
@@ -61,33 +67,71 @@ def cmd_seed(args: argparse.Namespace) -> None:
     ensure_db_and_tables()
 
     demo_users = [
-        ("bob", "bob@example.com", "bobpass", "regular_user"),
-        ("admin", "admin@example.com", "adminpass", "admin"),
+        ("bob", "bob@example.com", "bobpass", "regular_user", 53.0),
+        ("sasha", "sasha@example.com", "sashapass", "regular_user", 62.0),
+        ("milo", "milo@example.com", "milopass", "regular_user", 48.0),
+        ("nina", "nina@example.com", "ninapass", "regular_user", 30.0),
+        ("omar", "omar@example.com", "omarpass", "regular_user", 19.0),
+        ("priya", "priya@example.com", "priyapass", "regular_user", 8.0),
+        ("admin", "admin@example.com", "adminpass", "admin", 0.0),
     ]
 
     created = 0
     skipped = 0
     with get_cli_session() as session:
+        from app.services.hours_service import HoursClaimService
+
+        service = HoursClaimService(session)
+        milestones = service.ensure_default_milestones()
+        for milestone in milestones:
+            print(f"  milestone {milestone.name} ({milestone.hoursrequired}h)")
+        rewards = service.ensure_default_rewards()
+        for reward in rewards:
+            print(f"  reward {reward.name} ({reward.pointscost} pts, stock={reward.stock})")
+
         repo = UserRepository(session)
-        for username, email, password, role in demo_users:
-            if repo.get_by_username(username):
-                print(f"  skip  {username} (already exists)")
+        for username, email, password, role, lifetime_hours in demo_users:
+            existing = repo.get_by_username(username)
+            if existing:
+                existing.email = email
+                existing.role = role
+                existing.lifetimehours = lifetime_hours
+                existing.pointsbalance = int(lifetime_hours * 10)
+                existing.password = encrypt_password(password)
+                existing.lifetimehours = lifetime_hours
+                existing.pointsbalance = int(lifetime_hours * 10)
+                session.add(existing)
+                session.commit()
+                service.sync_user_milestones(existing)
+                print(f"  refresh {username} ({role}) - {lifetime_hours}h")
                 skipped += 1
                 continue
-            payload_cls = AdminCreate if role == "admin" else RegularUserCreate
-            repo.create(
-                payload_cls(
+
+            if role == "admin":
+                payload = AdminCreate(
                     username=username,
                     email=email,
                     password=encrypt_password(password),
                     role=role,
                 )
-            )
-            print(f"  create {username} ({role})")
+            else:
+                payload = RegularUserCreate(
+                    username=username,
+                    email=email,
+                    password=encrypt_password(password),
+                    role=role,
+                )
+            user = repo.create(payload)
+            user.lifetimehours = lifetime_hours
+            user.pointsbalance = int(lifetime_hours * 10)
+            session.add(user)
+            session.commit()
+            service.sync_user_milestones(user)
+            print(f"  create {username} ({role}) - {lifetime_hours}h")
             created += 1
 
-    print(f"Seed done — created {created}, skipped {skipped}.")
-    print("Login with bob/bobpass or admin/adminpass")
+    print(f"Seed done — created {created}, refreshed {skipped}.")
+    print("Demo logins: sasha/sashapass, bob/bobpass, milo/milopass, nina/ninapass, omar/omarpass, priya/priyapass, admin/adminpass")
 
 
 def cmd_run(args: argparse.Namespace) -> None:

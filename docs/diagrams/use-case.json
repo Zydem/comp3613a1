@@ -1,0 +1,53 @@
+{
+  "system": "Student Awards",
+  "actors": [
+    {"name": "Student", "side": "left"},
+    {"name": "Staff", "side": "right"}
+  ],
+  "use_cases": [
+    {
+      "name": "Track milestones and leaderboard",
+      "actors": ["Student"],
+      "includes": ["View progress dashboard"]
+    },
+    {
+      "name": "View progress dashboard",
+      "actors": ["Student"]
+    },
+    {
+      "name": "Redeem rewards",
+      "actors": ["Student"],
+      "includes": ["Check reward eligibility"],
+      "extends": ["Cancel reward redemption"]
+    },
+    {
+      "name": "Check reward eligibility"
+    },
+    {
+      "name": "Cancel reward redemption"
+    },
+    {
+      "name": "Fulfil reward redemption",
+      "actors": ["Staff"],
+      "extends": ["Redeem rewards"]
+    },
+    {
+      "name": "Log and submit volunteer hours",
+      "actors": ["Student"]
+    },
+    {
+      "name": "Verify volunteer hours",
+      "actors": ["Staff"],
+      "includes": ["Approve volunteer hours"],
+      "extends": ["Reject volunteer submission"]
+    },
+    {
+      "name": "Approve volunteer hours",
+      "actors": ["Staff"]
+    },
+    {
+      "name": "Reject volunteer submission",
+      "actors": ["Staff"]
+    }
+  ]
+}

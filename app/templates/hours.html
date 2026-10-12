@@ -1,0 +1,73 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Log hours{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const clearButton = document.getElementById('clear-form-btn');
+      if (!clearButton) return;
+
+      clearButton.addEventListener('click', function () {
+        const form = clearButton.closest('form');
+        if (!form) return;
+
+        form.reset();
+        form.querySelectorAll('input, textarea').forEach(function (field) {
+          field.blur();
+        });
+      });
+    });
+  </script>
+
+  <div class="row justify-content-center g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h1 class="h4 mb-3">Log volunteer hours</h1>
+          <form method="post" action="{{ url_for('submit_hours_claim') }}" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label" for="activity">Activity</label>
+              <input class="form-control" id="activity" name="activity" required>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="claim_date">Date</label>
+                <input class="form-control" id="claim_date" name="claim_date" type="date" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="hours">Hours</label>
+                <input class="form-control" id="hours" name="hours" type="number" min="0.5" step="0.5" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="description">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="proof">Proof (optional)</label>
+              <input class="form-control mb-2" id="proof" name="proof" type="text" placeholder="Supervisor name/contact or a link">
+              <input class="form-control" id="proof_image" name="proof_image" type="file" accept="image/*">
+              <div class="form-text">You may add a text note or upload an image.</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary" type="submit">Submit claim</button>
+              <button class="btn btn-outline-secondary" type="button" id="clear-form-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100 bg-light-subtle">
+        <div class="card-body d-flex flex-column justify-content-center text-center">
+          <div class="text-uppercase text-muted small fw-semibold">Total hours</div>
+          <div class="display-6 fw-bold text-primary mt-2">{{ user.lifetimehours or 0.0 }}</div>
+          <div class="text-muted small mt-1">Approved lifetime</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

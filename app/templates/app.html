@@ -1,9 +1,142 @@
 {% extends "authenticated-base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Student dashboard{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .milestone-tile {
+    border: 1px solid #e6e8ee;
+    border-radius: 0.9rem;
+    padding: 0.9rem 1rem;
+    background: #fff;
+    opacity: 1;
+  }
+  .milestone-tile.locked {
+    background: #f7f7fa;
+    opacity: 0.7;
+  }
+  .milestone-status {
+    color: #4b5563;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .recent-activity-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  .recent-activity-list li {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid #eef1f5;
+  }
+  .recent-activity-list li:last-child {
+    border-bottom: none;
+  }
+</style>
+{% endblock %}
 
 {% block subpage_content %}
 <div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Home</h1>
-  <p class="text-muted mb-0">Workflow screens replace this shell in Phase 5 implement.</p>
+  <div class="row g-4 align-items-stretch">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small text-uppercase fw-semibold mb-2">Lifetime hours</p>
+          <h1 class="display-6 mb-0">{{ lifetime_hours }}</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small text-uppercase fw-semibold mb-2">Points</p>
+          <h2 class="display-6 mb-0">{{ points_balance }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small text-uppercase fw-semibold mb-2">Progress</p>
+          {% if current_milestone %}
+          <p class="mb-1"><strong>Current:</strong> <span class="milestone-badge milestone-{{ current_milestone.name|lower }}">{{ current_milestone.name }}</span></p>
+          {% else %}
+          <p class="mb-1"><strong>Current:</strong> No milestone unlocked</p>
+          {% endif %}
+          {% if next_milestone %}
+          <p class="mb-2">Next milestone: <strong><span class="milestone-badge milestone-{{ next_milestone.name|lower }}">{{ next_milestone.name }}</span> ({{ next_milestone.hoursrequired }}h)</strong></p>
+          <div class="progress" role="progressbar" aria-label="Milestone progress" aria-valuenow="{{ ((lifetime_hours / next_milestone.hoursrequired) * 100) if next_milestone.hoursrequired else 0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ ((lifetime_hours / next_milestone.hoursrequired) * 100) if next_milestone.hoursrequired else 0 }}%"></div>
+          </div>
+          {% else %}
+          <p class="mb-2">Next milestone: <strong>All milestones unlocked</strong></p>
+          <div class="progress" role="progressbar" aria-label="Milestone progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: 100%"></div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4 g-4">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Milestones</h2>
+          <div class="row g-3">
+            {% for milestone in milestones %}
+            <div class="col-md-4">
+              <div class="milestone-tile {% if not milestone.unlocked %}locked{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="milestone-badge milestone-{{ milestone.name|lower }}">{{ milestone.name }}</span>
+                </div>
+                <div class="milestone-status">
+                  {% if milestone.unlocked %}
+                    Unlocked {{ milestone.unlocked_at.strftime('%d %b') }}
+                  {% else %}
+                    Locked
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Recent activity</h2>
+          {% if recent_activity %}
+          <ul class="recent-activity-list">
+            {% for item in recent_activity %}
+            <li>
+              <div class="fw-semibold">{{ item.title }}</div>
+              <div class="small text-muted">{{ item.detail }} · {{ item.date.strftime('%d %b') if item.date is not string else item.date }}</div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted mb-0">No recent activity yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Quick actions</h2>
+          <a class="btn btn-primary" href="{{ url_for('hours_dashboard') }}">Log volunteer hours</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
