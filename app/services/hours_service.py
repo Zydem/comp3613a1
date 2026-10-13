@@ -190,6 +190,8 @@ class HoursClaimService:
             else:
                 existing.description = description
                 existing.pointscost = point_cost
+                if stock > 0 and existing.stock <= 0:
+                    existing.stock = stock
                 existing.requiredmilestoneid = required_milestone_id
                 self.db.add(existing)
                 self.db.commit()

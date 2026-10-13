@@ -333,15 +333,11 @@ def ensure_wireframes_in_report(
     *,
     report_path: Path | None = None,
 ) -> str:
-    """Embed every docs/wireframes image in the Wireframes section of the report.
-
-    Paths are relative to docs/report.md (``wireframes/<file>``). Existing
-    markdown image links for a file are kept; missing files are appended.
-    Broken ``docs/wireframes/...`` links are rewritten to ``wireframes/...``.
-    """
-    del report_path  # reserved for future resolve checks
+    """Replace the Wireframes section with the actual diagram images in docs/wireframes/."""
+    del report_path
     text = markdown.replace("\r\n", "\n").replace("\r", "\n")
-    # Normalize docs/wireframes/… → wireframes/…
+
+    # Normalize any accidental docs/wireframes/... links to the correct relative path.
     text = re.sub(
         r"!\[([^\]]*)\]\(docs/wireframes/([^)]+)\)",
         r"![\1](wireframes/\2)",
@@ -350,75 +346,57 @@ def ensure_wireframes_in_report(
     )
 
     files = _wireframe_image_files()
-    linked = {match.group(1).replace("\\", "/").lstrip("./") for match in _WIREFRAME_IMAGE_RE.finditer(text)}
-
-    blocks: list[str] = []
-    for path in files:
-        rel = f"wireframes/{path.name}"
-        alt = path.stem.replace("-", " ").replace("_", " ")
-        if path.name in linked or rel in linked:
-            # Keep existing heading+image for this file; still list for section rebuild of missing only
-            continue
-        blocks.append(f"### {alt}\n\n![{alt}]({rel})\n")
-
     if not files:
         print(
             "Warning: no wireframe images in docs/wireframes/. "
             "Phase 4 must add PNG/JPG files and embed them in the report."
         )
-    else:
-        print(f"Wireframe images on disk: {len(files)} under docs/wireframes/")
-
-    if not blocks and _WIREFRAMES_SECTION_RE.search(text) and files:
-        # All files already linked — leave section body as-is (after path normalize).
         if not text.endswith("\n"):
             text += "\n"
-        print(f"Wireframes already embedded in report ({len(files)} image link(s)).")
         return text
 
-    if blocks:
-        extra = "\n".join(blocks).rstrip() + "\n"
-        if _WIREFRAMES_SECTION_RE.search(text):
-            def _append_missing(match: re.Match[str]) -> str:
-                body = match.group(0).rstrip()
-                # If section is only the heading (or heading + blank), replace with embeds.
-                lines = [ln for ln in body.splitlines() if ln.strip()]
-                if len(lines) <= 1:
-                    return f"{WIREFRAMES_HEADING}\n\n{extra}\n"
-                return body + "\n\n" + extra + "\n"
+    print(f"Wireframe images on disk: {len(files)} under docs/wireframes/")
 
-            text = _WIREFRAMES_SECTION_RE.sub(_append_missing, text, count=1)
-        elif re.search(r"^## Theming\s*$", text, re.MULTILINE):
-            text = re.sub(
-                r"^## Theming\s*$",
-                f"{WIREFRAMES_HEADING}\n\n{extra}\n## Theming",
-                text,
-                count=1,
-                flags=re.MULTILINE,
-            )
-        else:
-            text = text.rstrip() + f"\n\n{WIREFRAMES_HEADING}\n\n{extra}\n"
-        print(f"Embedded {len(blocks)} wireframe image(s) into report Wireframes section.")
-    elif not _WIREFRAMES_SECTION_RE.search(text):
-        placeholder = (
-            f"{WIREFRAMES_HEADING}\n\n"
-            "Embed each student wireframe here (paths relative to this file), e.g.\n\n"
-            "```markdown\n"
-            "### Explore search\n\n"
-            "![Explore search](wireframes/explore.png)\n"
-            "```\n"
+    def _url_encode_rel(name: str) -> str:
+        return (
+            name.replace(" ", "%20")
+            .replace("(", "%28")
+            .replace(")", "%29")
+            .replace("#", "%23")
         )
-        if re.search(r"^## Theming\s*$", text, re.MULTILINE):
-            text = re.sub(
-                r"^## Theming\s*$",
-                placeholder + "\n## Theming",
-                text,
-                count=1,
-                flags=re.MULTILINE,
-            )
-        else:
-            text = text.rstrip() + "\n\n" + placeholder
 
+    def _pretty_title(name: str) -> str:
+        stem = Path(name).stem
+        stem = stem.replace("student-awards-wireframessss-", "")
+        stem = stem.replace("-", " ")
+        stem = stem.replace("_", " ")
+        return stem.strip()
+
+    section_parts: list[str] = [WIREFRAMES_HEADING]
+    for path in files:
+        title = _pretty_title(path.name)
+        section_parts.append("")
+        section_parts.append(f"### {title}")
+        section_parts.append("")
+        section_parts.append(f"![{title}](wireframes/{_url_encode_rel(path.name)})")
+        section_parts.append("")
+
+    replacement = "\n".join(section_parts).rstrip() + "\n"
+
+    if _WIREFRAMES_SECTION_RE.search(text):
+        text = _WIREFRAMES_SECTION_RE.sub(replacement, text, count=1)
+    elif re.search(r"^## Theming\s*$", text, re.MULTILINE):
+        text = re.sub(
+            r"^## Theming\s*$",
+            replacement + "\n## Theming",
+            text,
+            count=1,
+            flags=re.MULTILINE,
+        )
+    else:
+        text = text.rstrip() + "\n\n" + replacement
+
+    print(f"Embedded {len(files)} wireframe image(s) into report Wireframes section.")
     if not text.endswith("\n"):
         text += "\n"
     return text
@@ -950,7 +928,7 @@ def _blocks(markdown: str) -> list[tuple]:
             blocks.append(("mermaid" if lang == "mermaid" else "code", text))
             i += 1
             continue
-        image = re.fullmatch(r"!\[[^\]]*\]\(([^)]+)\)", line.strip())
+        image = re.fullmatch(r"!\[[^\]]*\]\((.+)\)", line.strip())
         if image:
             flush()
             blocks.append(("image", image.group(1).strip()))

@@ -587,6 +587,27 @@ def test_reward_stock_persists_in_db_and_zero_stock_blocks_redeem(monkeypatch, t
             service.redeem_reward(student.id, reward_zero.rewardid)
 
 
+def test_default_reward_stock_is_restored_on_seed(monkeypatch, tmp_path):
+    db_path = tmp_path / "default_reward_stock_reset.db"
+    engine = create_engine(f"sqlite:///{db_path}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        service = HoursClaimService(session)
+        service.ensure_default_milestones()
+        rewards = service.ensure_default_rewards()
+        reward = next(item for item in rewards if item.name == "Gold Access Pass")
+
+        reward.stock = 0
+        session.add(reward)
+        session.commit()
+
+        service.ensure_default_rewards()
+        restored = session.get(type(reward), reward.rewardid)
+        assert restored.stock == 1
+
+
 def test_student_views_are_split_by_wireframe(monkeypatch, tmp_path):
     db_path = tmp_path / "student_views_test.db"
     engine = create_engine(f"sqlite:///{db_path}")
