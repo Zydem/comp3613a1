@@ -6,7 +6,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 import app.database as database
 from app.main import app
-from app.models.hours import HoursClaim, Milestone, Reward
+from app.models.hours import HoursClaim, Milestone, Redemption, Reward
 from app.models.user import User
 from app.services.hours_service import HoursClaimService
 from app.utilities.security import encrypt_password
@@ -246,3 +246,105 @@ def test_it07_invalid_hours_redirects_to_log_hours_form_with_flash(tmp_path, mon
     page = client.get("/hours")
     assert page.status_code == 200, page.text
     assert "Hours must be between 1 and 24" in page.text
+
+
+def test_it08_reject_without_reason_stays_on_claim_detail_with_flash(tmp_path, monkeypatch):
+    engine = create_engine(f"sqlite:///{tmp_path / 'admin_reject_reason.db'}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all([
+            User(username="student", email="student@example.com", password=encrypt_password("pw"), role="student", lifetimehours=0, pointsbalance=0),
+            User(username="admin", email="admin@example.com", password=encrypt_password("adminpass"), role="admin", lifetimehours=0, pointsbalance=0),
+        ])
+        session.add(HoursClaim(userid=1, activity="Park cleanup", date=date(2026, 10, 11), hours=3.5, description="Helped", status="pending"))
+        session.commit()
+
+    claim_id = 1
+    client = TestClient(app)
+    admin_token = login(client, "admin", "adminpass")
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    client.cookies.clear()
+    client.post("/login", data={"username": "admin", "password": "adminpass"}, follow_redirects=False)
+
+    invalid = client.post(
+        f"/admin/claims/{claim_id}/review",
+        data={"decision": "rejected", "reject_reason": "   "},
+        follow_redirects=False,
+    )
+    assert invalid.status_code == 303, invalid.text
+    assert invalid.headers["location"].endswith(f"/admin/claims/{claim_id}")
+
+    detail = client.get(f"/admin/claims/{claim_id}")
+    assert detail.status_code == 200, detail.text
+    assert "A reason is required to reject a claim" in detail.text
+
+    with Session(engine) as session:
+        claim = session.get(HoursClaim, claim_id)
+        assert claim.status == "pending"
+
+
+def test_it09_reward_validation_errors_stay_on_confirm_page(tmp_path, monkeypatch):
+    engine = create_engine(f"sqlite:///{tmp_path / 'reward_confirm_error.db'}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all([
+            User(username="student", email="student@example.com", password=encrypt_password("pw"), role="student", lifetimehours=50.0, pointsbalance=20),
+            User(username="admin", email="admin@example.com", password=encrypt_password("adminpass"), role="admin", lifetimehours=0, pointsbalance=0),
+        ])
+        session.add(Reward(name="Coffee Voucher", description="A treat.", pointscost=40, stock=0, requiredmilestoneid=None))
+        session.commit()
+
+    client = TestClient(app)
+    client.post("/login", data={"username": "student", "password": "pw"}, follow_redirects=False)
+
+    reward_id = 1
+    invalid = client.post(
+        f"/app/rewards/confirm/{reward_id}",
+        data={"confirm_redeem": "1", "staff_note": ""},
+        follow_redirects=False,
+    )
+    assert invalid.status_code == 303, invalid.text
+    assert invalid.headers["location"].endswith(f"/app/rewards/confirm/{reward_id}")
+
+    page = client.get(f"/app/rewards/confirm/{reward_id}")
+    assert page.status_code == 200, page.text
+    assert "Reward is locked" in page.text or "out of stock" in page.text.lower()
+
+
+def test_it10_admin_processed_redemption_show_error_on_redemption_page(tmp_path, monkeypatch):
+    engine = create_engine(f"sqlite:///{tmp_path / 'redemption_processed_error.db'}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all([
+            User(username="student", email="student@example.com", password=encrypt_password("pw"), role="student", lifetimehours=50.0, pointsbalance=50),
+            User(username="admin", email="admin@example.com", password=encrypt_password("adminpass"), role="admin", lifetimehours=0, pointsbalance=0),
+        ])
+        session.add(Reward(name="Coffee Voucher", description="A treat.", pointscost=40, stock=1, requiredmilestoneid=None))
+        session.commit()
+        session.add(
+            Redemption(
+                userid=1,
+                rewardid=1,
+                pointsspent=40,
+                status="fulfilled",
+                staffnote="done",
+            )
+        )
+        session.commit()
+
+    client = TestClient(app)
+    client.post("/login", data={"username": "admin", "password": "adminpass"}, follow_redirects=False)
+
+    invalid = client.post("/admin/redemptions/1/fulfill", follow_redirects=False)
+    assert invalid.status_code == 303, invalid.text
+    assert invalid.headers["location"].endswith("/admin/redemptions")
+
+    page = client.get("/admin/redemptions")
+    assert page.status_code == 200, page.text
+    assert "already been fulfilled" in page.text.lower()

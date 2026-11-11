@@ -77,6 +77,8 @@ async def submit_hours_claim(
         message = str(exc)
         if "greater than zero and no more than 24" in message:
             message = "Hours must be between 1 and 24."
+        if "rejection reason is required" in message.lower():
+            message = "A reason is required to reject a claim"
         flash(request, message, "error")
         return RedirectResponse(url=request.url_for("hours_dashboard"), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -99,6 +101,10 @@ async def review_hours_claim(
             reject_reason=reject_reason,
         )
         flash(request, "Claim reviewed successfully.", "success")
+        return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
-        flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
+        message = str(exc)
+        if "A reason is required to reject a claim" in message:
+            message = "A reason is required to reject a claim"
+        flash(request, message, "error")
+        return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)

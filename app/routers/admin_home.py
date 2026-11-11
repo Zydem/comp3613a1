@@ -98,9 +98,13 @@ async def admin_review_claim(
             adjusted_hours=adjusted_hours,
         )
         flash(request, "Claim recorded.", "success")
+        return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
-        flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
+        message = str(exc)
+        if "rejection reason is required" in message.lower():
+            message = "A reason is required to reject a claim"
+        flash(request, message, "error")
+        return RedirectResponse(url=request.url_for("admin_claim_detail_view", claim_id=claim_id), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/admin/redemptions", response_class=HTMLResponse)
@@ -123,9 +127,10 @@ async def fulfill_redemption(request: Request, user: AdminDep, db: SessionDep, r
     try:
         service.process_redemption(redemption_id, user.id, "fulfill")
         flash(request, "Redemption fulfilled.", "success")
+        return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
         flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/admin/redemptions/{redemption_id}/cancel")
@@ -134,9 +139,10 @@ async def cancel_redemption(request: Request, user: AdminDep, db: SessionDep, re
     try:
         service.process_redemption(redemption_id, user.id, "cancel")
         flash(request, "Redemption cancelled and points refunded.", "success")
+        return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
         flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/admin/leaderboard", response_class=HTMLResponse)

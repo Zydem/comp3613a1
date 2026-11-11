@@ -162,9 +162,10 @@ async def student_redeem_reward(
     try:
         service.redeem_reward(user.id, reward_id, staff_note=staff_note)
         flash(request, "Reward requested successfully. It is now pending staff review.", "success")
+        return RedirectResponse(url=request.url_for("student_rewards_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
         flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("student_rewards_view"), status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url=request.url_for("student_reward_confirm_view", reward_id=reward_id), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/app/rewards/confirm/{reward_id}")
@@ -178,15 +179,16 @@ async def student_confirm_redeem_reward(
 ):
     if confirm_redeem != "1":
         flash(request, "Redemption was not confirmed.", "error")
-        return RedirectResponse(url=request.url_for("student_rewards_view"), status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url=request.url_for("student_reward_confirm_view", reward_id=reward_id), status_code=status.HTTP_303_SEE_OTHER)
 
     service = HoursClaimService(db)
     try:
         service.redeem_reward(user.id, reward_id, staff_note=staff_note)
         flash(request, "Reward requested successfully. It is now pending staff review.", "success")
+        return RedirectResponse(url=request.url_for("student_rewards_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
         flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("student_rewards_view"), status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url=request.url_for("student_reward_confirm_view", reward_id=reward_id), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/app/redemptions", response_class=HTMLResponse)

@@ -285,12 +285,12 @@ class HoursClaimService:
 
         if action == "fulfill":
             if redemption.status == "fulfilled":
-                return redemption
+                raise ValueError("This redemption has already been fulfilled.")
             redemption.status = "fulfilled"
             redemption.processedby = staff_id
         elif action == "cancel":
             if redemption.status == "cancelled":
-                return redemption
+                raise ValueError("This redemption has already been cancelled.")
             redemption.status = "cancelled"
             redemption.processedby = staff_id
             if user is not None:
