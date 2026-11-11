@@ -89,14 +89,17 @@ async def admin_review_claim(
     service = HoursClaimService(db)
     if decision is None:
         raise HTTPException(status_code=400, detail="Decision is required.")
-    service.review_claim(
-        claim_id=claim_id,
-        reviewer_id=user.id,
-        decision=decision,
-        reject_reason=reject_reason,
-        adjusted_hours=adjusted_hours,
-    )
-    flash(request, "Claim recorded.", "success")
+    try:
+        service.review_claim(
+            claim_id=claim_id,
+            reviewer_id=user.id,
+            decision=decision,
+            reject_reason=reject_reason,
+            adjusted_hours=adjusted_hours,
+        )
+        flash(request, "Claim recorded.", "success")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -117,16 +120,22 @@ async def admin_redemptions_view(request: Request, user: AdminDep, db: SessionDe
 @router.post("/admin/redemptions/{redemption_id}/fulfill")
 async def fulfill_redemption(request: Request, user: AdminDep, db: SessionDep, redemption_id: int):
     service = HoursClaimService(db)
-    service.process_redemption(redemption_id, user.id, "fulfill")
-    flash(request, "Redemption fulfilled.", "success")
+    try:
+        service.process_redemption(redemption_id, user.id, "fulfill")
+        flash(request, "Redemption fulfilled.", "success")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/admin/redemptions/{redemption_id}/cancel")
 async def cancel_redemption(request: Request, user: AdminDep, db: SessionDep, redemption_id: int):
     service = HoursClaimService(db)
-    service.process_redemption(redemption_id, user.id, "cancel")
-    flash(request, "Redemption cancelled and points refunded.", "success")
+    try:
+        service.process_redemption(redemption_id, user.id, "cancel")
+        flash(request, "Redemption cancelled and points refunded.", "success")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     return RedirectResponse(url=request.url_for("admin_redemptions_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 

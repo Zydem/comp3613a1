@@ -62,15 +62,18 @@ async def submit_hours_claim(
         proof_value = f"/static/uploads/{stored_name}"
 
     service = HoursClaimService(db)
-    service.submit_claim(
-        user_id=user.id,
-        activity=activity,
-        claim_date=date.fromisoformat(claim_date),
-        hours=hours,
-        description=description,
-        proof=proof_value,
-    )
-    flash(request, "Volunteer claim submitted successfully. It is now pending review.", "success")
+    try:
+        service.submit_claim(
+            user_id=user.id,
+            activity=activity,
+            claim_date=date.fromisoformat(claim_date),
+            hours=hours,
+            description=description,
+            proof=proof_value,
+        )
+        flash(request, "Volunteer claim submitted successfully. It is now pending review.", "success")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     return RedirectResponse(url=request.url_for("user_home_view"), status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -84,10 +87,14 @@ async def review_hours_claim(
     reject_reason: str | None = Form(default=None),
 ):
     service = HoursClaimService(db)
-    service.review_claim(
-        claim_id=claim_id,
-        reviewer_id=reviewer.id,
-        decision=decision,
-        reject_reason=reject_reason,
-    )
+    try:
+        service.review_claim(
+            claim_id=claim_id,
+            reviewer_id=reviewer.id,
+            decision=decision,
+            reject_reason=reject_reason,
+        )
+        flash(request, "Claim reviewed successfully.", "success")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     return RedirectResponse(url=request.url_for("admin_home_view"), status_code=status.HTTP_303_SEE_OTHER)
