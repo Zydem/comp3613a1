@@ -48,21 +48,21 @@ async def submit_hours_claim(
 ):
     proof_value = proof.strip() if proof and proof.strip() else None
 
-    if proof_image is not None and proof_image.filename:
-        allowed_extensions = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
-        file_extension = Path(proof_image.filename).suffix.lower()
-        if file_extension not in allowed_extensions:
-            raise ValueError("Proof image must be one of: png, jpg, jpeg, gif, webp.")
-
-        upload_dir = Path("app/static/uploads")
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        stored_name = f"{uuid4().hex}{file_extension}"
-        with (upload_dir / stored_name).open("wb") as image_file:
-            image_file.write(await proof_image.read())
-        proof_value = f"/static/uploads/{stored_name}"
-
-    service = HoursClaimService(db)
     try:
+        if proof_image is not None and proof_image.filename:
+            allowed_extensions = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+            file_extension = Path(proof_image.filename).suffix.lower()
+            if file_extension not in allowed_extensions:
+                raise ValueError("Proof image must be one of: png, jpg, jpeg, gif, webp.")
+
+            upload_dir = Path("app/static/uploads")
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            stored_name = f"{uuid4().hex}{file_extension}"
+            with (upload_dir / stored_name).open("wb") as image_file:
+                image_file.write(await proof_image.read())
+            proof_value = f"/static/uploads/{stored_name}"
+
+        service = HoursClaimService(db)
         service.submit_claim(
             user_id=user.id,
             activity=activity,
@@ -72,9 +72,13 @@ async def submit_hours_claim(
             proof=proof_value,
         )
         flash(request, "Volunteer claim submitted successfully. It is now pending review.", "success")
+        return RedirectResponse(url=request.url_for("user_home_view"), status_code=status.HTTP_303_SEE_OTHER)
     except ValueError as exc:
-        flash(request, str(exc), "error")
-    return RedirectResponse(url=request.url_for("user_home_view"), status_code=status.HTTP_303_SEE_OTHER)
+        message = str(exc)
+        if "greater than zero and no more than 24" in message:
+            message = "Hours must be between 1 and 24."
+        flash(request, message, "error")
+        return RedirectResponse(url=request.url_for("hours_dashboard"), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/hours/review/{claim_id}")
