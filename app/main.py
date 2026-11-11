@@ -9,6 +9,7 @@ from starlette.responses import JSONResponse, RedirectResponse
 
 from app.config import get_settings
 from app.routers import api_router, router, static_files, templates
+from app.utilities.flash import flash
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,10 @@ async def forbidden_json_handler(request: Request, exc: Exception):
             status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": detail},
         )
-    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Forbidden"})
+
+    flash(request, "You don't have access to that page", "error")
+    redirect_target = request.url_for("user_home_view")
+    return RedirectResponse(url=redirect_target, status_code=status.HTTP_303_SEE_OTHER)
 
 
 if __name__ == "__main__":

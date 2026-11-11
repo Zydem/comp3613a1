@@ -214,6 +214,29 @@ def test_it06_protected_routes_reject_unapproved_access(tmp_path, monkeypatch):
     assert admin_ok.status_code == 200
 
 
+def test_it06b_student_requesting_staff_page_redirects_to_dashboard_with_flash(tmp_path, monkeypatch):
+    engine = create_engine(f"sqlite:///{tmp_path / 'staff_page_access.db'}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add(
+            User(username="alice", email="alice@example.com", password=encrypt_password("pw"), role="student", lifetimehours=5.0, pointsbalance=50)
+        )
+        session.commit()
+
+    client = TestClient(app)
+    client.post("/login", data={"username": "alice", "password": "pw"}, follow_redirects=False)
+
+    forbidden = client.get("/admin", follow_redirects=False)
+    assert forbidden.status_code == 303, forbidden.text
+    assert forbidden.headers["location"].endswith("/app")
+
+    dashboard = client.get("/app")
+    assert dashboard.status_code == 200, dashboard.text
+    assert "You don't have access to that page" in dashboard.text
+
+
 def test_it07_invalid_hours_redirects_to_log_hours_form_with_flash(tmp_path, monkeypatch):
     engine = create_engine(f"sqlite:///{tmp_path / 'web_hours_invalid.db'}")
     monkeypatch.setattr(database, "engine", engine)

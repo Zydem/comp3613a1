@@ -47,3 +47,7 @@
 | IT04 | leaderboard and rewards catalog are returned by the API | call /api/leaderboard and /api/rewards as a student | ranked data and reward entries are returned in JSON |
 | IT05 | redemption request and staff processing flow | student requests a reward, then admin fulfills it | redemption is created, visible to the student, and fulfilled by staff |
 | IT06 | protected /api routes reject unauthorized or wrong-role access | access /api/users without a token and with a student token | no-token requests fail with 401; student access is blocked with 403 |
+| IT07 | invalid hours redirect to the Log Hours page with a flash message | submit 30 hours through the web form as a student | redirect remains on /hours and shows the validation message "Hours must be between 1 and 24." |
+| IT08 | reject without a reason stays on the claim detail page | submit the admin claim review form with blank reject reason | redirect stays on the claim detail page and shows "A reason is required to reject a claim" while the claim remains pending |
+| IT09 | reward validation errors stay on the confirm page | attempt to confirm a locked or out-of-stock reward | redirect stays on the reward confirmation page and shows the validation message |
+| IT10 | already-processed redemption attempts stay on the admin page with an error | submit fulfill/cancel twice on the same redemption | redirect stays on /admin/redemptions and shows the processed-state error |
