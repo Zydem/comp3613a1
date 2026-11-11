@@ -1,0 +1,1 @@
+Postman collection prepared for manual API validation. Import docs/assignment2/postman/StudentAwards_API_Assignment2.postman_collection.json and run against http://127.0.0.1:5000.

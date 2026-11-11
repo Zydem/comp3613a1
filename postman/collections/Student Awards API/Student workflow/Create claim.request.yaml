@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/claims"
+method: POST
+headers:
+  Authorization: Bearer {{studentToken}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "activity": "Park cleanup",
+      "date": "2026-11-10",
+      "hours": 3.5,
+      "description": "Helped with the local park cleanup.",
+      "proof": "receipt-park"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () { pm.expect(pm.response.code).to.eql(201); });
+      const json = pm.response.json();
+      if (json.claim && (json.claim.claimid || json.claim.id)) { pm.collectionVariables.set('claimId', String(json.claim.claimid || json.claim.id)); }
+      pm.test("Claim payload contains a key field", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });
+    language: text/javascript
+order: 2000

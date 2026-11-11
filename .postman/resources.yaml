@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 9214a55d-d0dd-4123-8249-9a93d5f7ee54
+
+localResources:
+  collections:
+    - ../docs/assignment2/postman/StudentAwards_API_Assignment2.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/Student Awards API: 01e4797c-0f57-4a42-a010-63df84b8a790

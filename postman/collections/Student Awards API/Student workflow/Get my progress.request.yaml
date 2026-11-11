@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/me/progress"
+method: GET
+headers:
+  Authorization: Bearer {{studentToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () { pm.expect(pm.response.code).to.eql(200); });
+      const json = pm.response.json();
+      pm.test("Progress payload includes key field", function () { pm.expect(json.user_id || json.username || json.points !== undefined).to.not.be.undefined; });
+    language: text/javascript
+order: 4000

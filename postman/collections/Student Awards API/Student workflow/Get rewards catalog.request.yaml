@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/rewards"
+method: GET
+headers:
+  Authorization: Bearer {{studentToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () { pm.expect(pm.response.code).to.eql(200); });
+      const json = pm.response.json();
+      const cheapReward = Array.isArray(json) ? json.find(item => item.eligible && (item.point_cost || item.pointscost || 0) <= 90) : null;
+      if (cheapReward) { const rewardId = cheapReward.reward_id ?? cheapReward.rewardid; pm.collectionVariables.set('rewardId', String(rewardId)); }
+      pm.test("Response contains rewards and key field", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });
+    language: text/javascript
+order: 1000

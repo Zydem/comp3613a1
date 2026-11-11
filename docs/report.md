@@ -235,6 +235,8 @@ Phase 6. The Render app is live and responding on the public URL below.
 
 Public Render URL (not localhost): https://faststarter-961m.onrender.com
 
+GitHub repo: https://github.com/Zydem/comp3613a1
+
 ## Logins
 
 Every account a marker needs, including the seeded demo users for leaderboard and milestone testing:
@@ -249,7 +251,7 @@ Every account a marker needs, including the seeded demo users for leaderboard an
 
 ## YouTube URL
 
-https://youtu.be/eGBhhZdR0io
+https://www.youtube.com/watch?v=eGBhhZdR0io
 
 ## Session transcripts
 

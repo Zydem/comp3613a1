@@ -25,8 +25,8 @@ class HoursClaimService:
     ) -> HoursClaim:
         if not activity or not description:
             raise ValueError("Activity and description are required.")
-        if hours <= 0:
-            raise ValueError("Hours must be greater than zero.")
+        if hours <= 0 or hours > 24:
+            raise ValueError("Hours must be greater than zero and no more than 24.")
 
         claim = HoursClaim(
             userid=user_id,
@@ -50,19 +50,27 @@ class HoursClaimService:
         claim = self.repo.get_claim(claim_id)
         if claim is None:
             raise ValueError("Claim not found.")
+        if claim.status != "pending":
+            raise ValueError("This claim has already been processed.")
 
         decision = decision.lower().strip()
         if decision not in {"approved", "rejected"}:
             raise ValueError("Decision must be approved or rejected.")
 
+        if decision == "rejected":
+            if not reject_reason or not str(reject_reason).strip():
+                raise ValueError("A rejection reason is required.")
+            claim.rejectreason = reject_reason
+        else:
+            claim.rejectreason = None
+
         claim.status = decision
         claim.reviewedby = reviewer_id
-        claim.rejectreason = reject_reason if decision == "rejected" else None
 
         if decision == "approved":
             approved_hours = float(adjusted_hours) if adjusted_hours is not None else float(claim.hours)
-            if approved_hours <= 0:
-                raise ValueError("Approved hours must be greater than zero.")
+            if approved_hours <= 0 or approved_hours > 24:
+                raise ValueError("Approved hours must be greater than zero and no more than 24.")
             claim.hours = approved_hours
 
             user = self.db.get(User, claim.userid)

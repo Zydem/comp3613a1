@@ -1,0 +1,13 @@
+$kind: http-request
+name: No token -> 401
+url: "{{baseUrl}}/api/me/progress"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 401", function () { pm.expect(pm.response.code).to.eql(401); });
+      const json = pm.response.json();
+      pm.test("Error payload contains detail", function () { pm.expect(json.detail).to.be.a("string"); });
+      pm.test("Response contains a key field", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });
+    language: text/javascript
+order: 3000

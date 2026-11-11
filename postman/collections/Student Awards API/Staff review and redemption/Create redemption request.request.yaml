@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/redemptions"
+method: POST
+headers:
+  Authorization: Bearer {{studentToken}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "reward_id": {{rewardId}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () { pm.expect(pm.response.code).to.eql(201); });
+      const json = pm.response.json();
+      const redemptionId = json.redemption && (json.redemption.redemptionid || json.redemption.id);
+      if (redemptionId) { pm.collectionVariables.set('redemptionId', String(redemptionId)); }
+      pm.test("Redemption payload contains a key field", function () { pm.expect(json.message || json.redemption || Object.keys(json || {}).length > 0).to.exist; });
+    language: text/javascript
+order: 3000

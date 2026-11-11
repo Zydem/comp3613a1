@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/logout"
+method: POST
+headers:
+  Authorization: Bearer {{studentToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () { pm.expect(pm.response.code).to.eql(200); });
+      const json = pm.response.json();
+      pm.test("Logout payload contains a message", function () { pm.expect(json.message).to.be.a("string"); });
+      pm.test("Response contains a key field", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });
+    language: text/javascript
+order: 1000

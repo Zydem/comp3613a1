@@ -226,6 +226,95 @@ def test_admin_review_page_sorts_and_sections_pending_approved_rejected_claims(m
     assert page.text.index("Library help") < page.text.index("Food drive")
 
 
+def test_api_login_claims_progress_and_rewards_flow(monkeypatch, tmp_path):
+    db_path = tmp_path / "api_workflow.db"
+    engine = create_engine(f"sqlite:///{db_path}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all([
+            User(username="alice", email="alice@example.com", password=encrypt_password("pw"), role="student", lifetimehours=5, pointsbalance=50),
+            User(username="admin", email="admin@example.com", password=encrypt_password("adminpass"), role="admin", lifetimehours=0, pointsbalance=0),
+        ])
+        session.commit()
+
+    client = TestClient(app)
+    login = client.post("/api/auth/login", json={"username": "alice", "password": "pw"})
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    claim = client.post(
+        "/api/claims",
+        json={
+            "activity": "Park cleanup",
+            "date": "2026-10-11",
+            "hours": 3.5,
+            "description": "Helped with park cleanup",
+            "proof": "receipt-1",
+        },
+        headers=headers,
+    )
+    assert claim.status_code == 201
+
+    my_claims = client.get("/api/claims/me", headers=headers)
+    assert my_claims.status_code == 200
+    assert my_claims.json()[0]["activity"] == "Park cleanup"
+
+    progress = client.get("/api/me/progress", headers=headers)
+    assert progress.status_code == 200
+    assert progress.json()["lifetime_hours"] == 5
+
+    leaderboard = client.get("/api/leaderboard", headers=headers)
+    assert leaderboard.status_code == 200
+    assert leaderboard.json()[0]["username"] in {"alice", "admin"}
+
+    rewards = client.get("/api/rewards", headers=headers)
+    assert rewards.status_code == 200
+    assert isinstance(rewards.json(), list)
+
+
+def test_api_validation_and_role_checks(monkeypatch, tmp_path):
+    db_path = tmp_path / "api_validation.db"
+    engine = create_engine(f"sqlite:///{db_path}")
+    monkeypatch.setattr(database, "engine", engine)
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all([
+            User(username="alice", email="alice@example.com", password=encrypt_password("pw"), role="student", lifetimehours=5, pointsbalance=50),
+            User(username="admin", email="admin@example.com", password=encrypt_password("adminpass"), role="admin", lifetimehours=0, pointsbalance=0),
+        ])
+        session.commit()
+
+    client = TestClient(app)
+    bad = client.post("/api/claims", json={"activity": "X", "date": "2026-10-11", "hours": 25, "description": "bad"})
+    assert bad.status_code == 401
+
+    login = client.post("/api/auth/login", json={"username": "alice", "password": "pw"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    invalid_hours = client.post(
+        "/api/claims",
+        json={"activity": "X", "date": "2026-10-11", "hours": 25, "description": "bad"},
+        headers=headers,
+    )
+    assert invalid_hours.status_code == 400
+    assert "24" in invalid_hours.json()["detail"]
+
+    staff_list = client.get("/api/claims", headers=headers)
+    assert staff_list.status_code == 403
+
+    reject = client.patch(
+        "/api/claims/999",
+        json={"action": "reject", "reason": "Bad"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert reject.status_code == 403
+
+
 def test_admin_review_tabs_show_counts_and_status_columns(monkeypatch, tmp_path):
     db_path = tmp_path / "admin_review_tabs.db"
     engine = create_engine(f"sqlite:///{db_path}")

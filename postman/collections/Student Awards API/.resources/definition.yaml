@@ -1,0 +1,9 @@
+$kind: collection
+description: JWT-based Student Awards API workflow with login, claims, staff review, rewards, redemptions, and logout.
+variables:
+  baseUrl: http://127.0.0.1:5000
+  studentToken: ""
+  adminToken: ""
+  claimId: ""
+  redemptionId: ""
+  rewardId: ""

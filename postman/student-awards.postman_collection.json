@@ -1,0 +1,541 @@
+{
+  "info": {
+    "_postman_id": "917f7ff1-8d30-4d0e-9f2a-a0754f361f3d",
+    "name": "Student Awards API",
+    "description": "JWT-based Student Awards API workflow with login, claims, staff review, rewards, redemptions, and logout.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:5000", "type": "string" },
+    { "key": "studentToken", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "claimId", "value": "", "type": "string" },
+    { "key": "redemptionId", "value": "", "type": "string" },
+    { "key": "rewardId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login as student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Student login returns a token\", function () { pm.expect(json.access_token).to.be.a(\"string\"); });",
+                  "if (json.access_token) { pm.collectionVariables.set('studentToken', json.access_token); }",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"bobpass\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Admin login returns a token\", function () { pm.expect(json.access_token).to.be.a(\"string\"); });",
+                  "if (json.access_token) { pm.collectionVariables.set('adminToken', json.access_token); }",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"adminpass\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "No token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.expect(pm.response.code).to.eql(401); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error payload contains detail\", function () { pm.expect(json.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "me", "progress"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Student calling staff route -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error payload contains detail\", function () { pm.expect(json.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/claims?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"],
+              "query": [
+                { "key": "status", "value": "pending" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hours 30 -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.expect(pm.response.code).to.eql(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error payload contains detail\", function () { pm.expect(json.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activity\": \"Weekend volunteering\",\n  \"date\": \"2026-11-10\",\n  \"hours\": 30,\n  \"description\": \"This claim should fail validation\",\n  \"proof\": \"bad-data\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Student workflow",
+      "item": [
+        {
+          "name": "Get rewards catalog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "const cheapReward = Array.isArray(json) ? json.find(item => item.eligible && (item.point_cost || item.pointscost || 0) <= 90) : null;",
+                  "if (cheapReward) { const rewardId = cheapReward.reward_id ?? cheapReward.rewardid; pm.collectionVariables.set('rewardId', String(rewardId)); }",
+                  "pm.test(\"Response contains rewards and key field\", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rewards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rewards"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create claim",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const json = pm.response.json();",
+                  "if (json.claim && (json.claim.claimid || json.claim.id)) { pm.collectionVariables.set('claimId', String(json.claim.claimid || json.claim.id)); }",
+                  "pm.test(\"Claim payload contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activity\": \"Park cleanup\",\n  \"date\": \"2026-11-10\",\n  \"hours\": 3.5,\n  \"description\": \"Helped with the local park cleanup.\",\n  \"proof\": \"receipt-park\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my claims",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Claims payload is present\", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/claims/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my progress",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Progress payload includes key field\", function () { pm.expect(json.user_id || json.username || json.points !== undefined).to.not.be.undefined; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "me", "progress"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Staff review and redemption",
+      "item": [
+        {
+          "name": "List claims as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Claims payload is present\", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/claims?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"],
+              "query": [
+                { "key": "status", "value": "pending" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review claim as staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Review payload includes message or claim\", function () { pm.expect(json.message || json.claim).to.exist; });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approve\",\n  \"hours\": 4.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/claims/{{claimId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims", "{{claimId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create redemption request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const json = pm.response.json();",
+                  "const redemptionId = json.redemption && (json.redemption.redemptionid || json.redemption.id);",
+                  "if (redemptionId) { pm.collectionVariables.set('redemptionId', String(redemptionId)); }",
+                  "pm.test(\"Redemption payload contains a key field\", function () { pm.expect(json.message || json.redemption || Object.keys(json || {}).length > 0).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reward_id\": {{rewardId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/redemptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "redemptions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my redemptions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Redemptions payload is present\", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/redemptions/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "redemptions", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List redemptions as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Redemptions payload is present\", function () { pm.expect(Array.isArray(json) || Object.keys(json || {}).length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/redemptions?status=requested",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "redemptions"],
+              "query": [
+                { "key": "status", "value": "requested" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel redemption as staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Cancellation response contains message or redemption\", function () { pm.expect(json.message || json.redemption).to.exist; });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"cancel\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/redemptions/{{redemptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "redemptions", "{{redemptionId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Logout payload contains a message\", function () { pm.expect(json.message).to.be.a(\"string\"); });",
+                  "pm.test(\"Response contains a key field\", function () { const keys = Object.keys(json || {}); pm.expect(keys.length > 0).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

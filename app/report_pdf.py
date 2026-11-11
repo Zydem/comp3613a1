@@ -228,11 +228,22 @@ def export_report(
             "(runs student-judge -> docs/judge.md), then re-run this command."
         )
     app_url, logins, missing = _marker_access(markdown)
+    github_url = _extract_link(markdown, "github")
+    youtube_url = _extract_link(markdown, "youtube")
     dest.parent.mkdir(parents=True, exist_ok=True)
 
     pdf = _new_pdf(bool(missing))
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
-        cover = _cover_html(clean_name, clean_id, app_url, logins, integrity, missing)
+        cover = _cover_html(
+            clean_name,
+            clean_id,
+            app_url,
+            logins,
+            integrity,
+            missing,
+            github_url=github_url,
+            youtube_url=youtube_url,
+        )
         body = _markdown_to_html(markdown, src.parent, Path(tmp))
         appendix = _markdown_to_html(
             appendix_markdown(transcripts),
@@ -562,6 +573,9 @@ def _cover_html(
     logins: str,
     integrity: IntegrityResult,
     missing: list[str],
+    *,
+    github_url: str = "Not yet",
+    youtube_url: str = "Not yet",
 ) -> str:
     login_html = " · ".join(
         html_lib.escape(line.strip()) for line in logins.splitlines() if line.strip()
@@ -574,6 +588,8 @@ def _cover_html(
         ("Student name", html_lib.escape(name), False),
         ("Student ID", html_lib.escape(student_id), False),
         ("Deployed app", html_lib.escape(app_url), False),
+        ("GitHub repo", html_lib.escape(github_url or "Not yet"), False),
+        ("YouTube video", html_lib.escape(youtube_url or "Not yet"), False),
         ("Logins", login_html, False),
         ("Skill integrity", integrity_value, not integrity.ok),
     ]
@@ -653,6 +669,22 @@ def _marker_access(markdown: str) -> tuple[str, str, list[str]]:
     else:
         login_text = "\n".join(login_lines)
     return app_url, login_text, missing
+
+
+def _extract_link(markdown: str, topic: str) -> str:
+    section = _section(markdown, topic, f"{topic} url", f"{topic} link", f"{topic} repo")
+    if not section:
+        section = markdown
+    urls = re.findall(r"https?://[^\s)]+", section)
+    if not urls:
+        return "Not yet"
+    filtered = []
+    for url in urls:
+        if topic == "github" and "github.com" in url.lower():
+            filtered.append(url)
+        elif topic == "youtube" and ("youtube.com" in url.lower() or "youtu.be" in url.lower()):
+            filtered.append(url)
+    return filtered[0] if filtered else urls[0]
 
 
 def _markdown_to_html(markdown: str, base: Path, tmp: Path) -> str:
