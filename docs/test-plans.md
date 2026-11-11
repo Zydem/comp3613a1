@@ -51,3 +51,4 @@
 | IT08 | reject without a reason stays on the claim detail page | submit the admin claim review form with blank reject reason | redirect stays on the claim detail page and shows "A reason is required to reject a claim" while the claim remains pending |
 | IT09 | reward validation errors stay on the confirm page | attempt to confirm a locked or out-of-stock reward | redirect stays on the reward confirmation page and shows the validation message |
 | IT10 | already-processed redemption attempts stay on the admin page with an error | submit fulfill/cancel twice on the same redemption | redirect stays on /admin/redemptions and shows the processed-state error |
+| IT11 | student requesting a staff-only web page is redirected with a flash message | open /admin while logged in as a student | browser redirects to /app and displays "You don't have access to that page" while /api continues to return 403 JSON |
